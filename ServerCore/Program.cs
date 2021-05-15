@@ -17,6 +17,12 @@ namespace ServerCore
 
                 if (Interlocked.CompareExchange(ref _locked, desired, expected) == expected)
                     break;
+
+
+                // Context Switching
+                // Thread.Sleep(1);
+                // Thread.Sleep(0);
+                Thread.Yield();
             }
             _locked = 1;
         }
