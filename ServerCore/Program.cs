@@ -4,38 +4,24 @@ using System.Threading.Tasks;
 
 namespace ServerCore
 {
-    class SpinLock
+    class Lock
     {
-        int _locked = 0;
+        AutoResetEvent _available = new AutoResetEvent(true);
 
         public void Acquire()
         {
-            while (true)
-            {
-                int expected = 0;
-                int desired = 1;
-
-                if (Interlocked.CompareExchange(ref _locked, desired, expected) == expected)
-                    break;
-
-
-                // Context Switching
-                // Thread.Sleep(1);
-                // Thread.Sleep(0);
-                Thread.Yield();
-            }
-            _locked = 1;
+            _available.WaitOne();
         }
 
         public void Release()
         {
-            _locked = 0;
+            _available.Set();
         }
     }
     class Program
     {
         static int _num = 0;
-        static SpinLock _lock = new SpinLock();
+        static Lock _lock = new Lock();
 
         static void Thread1()
         {
