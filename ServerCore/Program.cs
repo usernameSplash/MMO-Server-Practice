@@ -4,31 +4,64 @@ using System.Threading.Tasks;
 
 namespace ServerCore
 {
+    class SpinLock
+    {
+        int _locked = 0;
+
+        public void Acquire()
+        {
+            while (true)
+            {
+                int expected = 0;
+                int desired = 1;
+
+                if (Interlocked.CompareExchange(ref _locked, desired, expected) == expected)
+                    break;
+            }
+            _locked = 1;
+        }
+
+        public void Release()
+        {
+            _locked = 0;
+        }
+    }
     class Program
     {
-        static bool _stop = false;
+        static int _num = 0;
+        static SpinLock _lock = new SpinLock();
 
-        static void ThreadMain()
+        static void Thread1()
         {
-            Console.WriteLine("Start Thread");
-
-            while (_stop == false)
+            for (int i = 0; i < 1000000; i++)
             {
-                // waiting for stop sign
+                _lock.Acquire();
+                _num++;
+                _lock.Release();
             }
-
-            Console.WriteLine("Terminate Thread");
         }
+
+        static void Thread2()
+        {
+            for (int i = 0; i < 1000000; i++)
+            {
+                _lock.Acquire();
+                _num--;
+                _lock.Release();
+            }
+        }
+
         static void Main(string[] args)
         {
-            Task t = new Task(ThreadMain);
-            t.Start();
+            Task t1 = new Task(Thread1);
+            Task t2 = new Task(Thread2);
 
-            Thread.Sleep(1000);
+            t1.Start();
+            t2.Start();
 
-            _stop = true;
+            Task.WaitAll(t1, t2);
 
-
+            Console.WriteLine(_num);
         }
     }
 }
