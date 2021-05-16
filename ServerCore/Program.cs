@@ -6,35 +6,31 @@ namespace ServerCore
 {
     class Program
     {
-        static volatile int count = 0;
-        static Lock _lock = new Lock();
+        static ThreadLocal<string> ThreadName = new ThreadLocal<string>(
+            () =>
+            {
+                return $"My Name is {Thread.CurrentThread.ManagedThreadId}";
+            }
+        );
+
+        static void WhoAmI()
+        {
+            // 스레드 개인 영역에서만 ThreadName이 변경된 상태이다
+            Thread.Sleep(10);
+
+            Console.WriteLine(ThreadName.Value);
+        }
+
         static void Main(string[] args)
         {
-            Task t1 = new Task(delegate ()
-            {
-                for (int i = 0; i < 100000; i++)
-                {
-                    _lock.WriteLock();
-                    count++;
-                    _lock.WriteUnlock();
-                }
-            });
+            ThreadPool.SetMinThreads(1, 1);
+            ThreadPool.SetMaxThreads(15, 15);
 
-            Task t2 = new Task(delegate ()
-            {
-                for (int i = 0; i < 100000; i++)
-                {
-                    _lock.WriteLock();
-                    count--;
-                    _lock.WriteUnlock();
-                }
-            });
-
-            t1.Start();
-            t2.Start();
-            Task.WaitAll(t1, t2);
-
-            Console.WriteLine(count);
+            Parallel.Invoke(
+                WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI,
+                WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI,
+                WhoAmI, WhoAmI, WhoAmI, WhoAmI, WhoAmI
+            );
         }
     }
 }
