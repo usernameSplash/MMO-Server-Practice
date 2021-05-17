@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
+using System.Threading;
 
 namespace ServerCore
 {
@@ -12,20 +13,15 @@ namespace ServerCore
         {
             try
             {
-                // Client 요청 받기
-                byte[] receiveBuffer = new byte[1024];
-                int receiveBytes = clientSocket.Receive(receiveBuffer);
-                string receiveData = Encoding.UTF8.GetString(receiveBuffer, 0, receiveBytes);
-                Console.WriteLine($"[From Client]: {receiveData} {DateTime.Now}");
+                Session session = new Session();
+                session.Init(clientSocket);
 
-                // Client에게 보내기
-                byte[] sendBuffer = Encoding.UTF8.GetBytes("Welcome to Kyeongmin's server!");
-                clientSocket.Send(sendBuffer);
-                // clientSocket.re
+                string msg = "Welcome to Kyeongmin's server!";
+                session.Send(msg);
 
-                // Client 퇴장
-                clientSocket.Shutdown(SocketShutdown.Both);
-                clientSocket.Close();
+                Thread.Sleep(1000);
+
+                session.Disconnect();
             }
             catch (Exception e)
             {
