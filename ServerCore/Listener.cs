@@ -6,8 +6,8 @@ namespace ServerCore
 {
     class Listener
     {
-        private Socket _listenerSocket;
-        private Action<Socket> _onAcceptHandler;
+        Socket _listenerSocket;
+        Action<Socket> _onAcceptHandler;
 
         public void Init(EndPoint endPoint, Action<Socket> onAcceptHandler)
         {
