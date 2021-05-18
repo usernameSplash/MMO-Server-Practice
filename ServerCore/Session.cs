@@ -27,7 +27,7 @@ namespace ServerCore
 
             _sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnSendCompleted);
 
-            RegisterRecieve(recvArgs);
+            RegisterReceive(recvArgs);
 
         }
 
@@ -95,7 +95,7 @@ namespace ServerCore
 
 
         #region 네트워크 통신
-        void RegisterRecieve(SocketAsyncEventArgs args)
+        void RegisterReceive(SocketAsyncEventArgs args)
         {
             bool pending = _socket.ReceiveAsync(args);
             if (pending == false)
@@ -111,7 +111,7 @@ namespace ServerCore
                 {
                     string recvData = Encoding.UTF8.GetString(args.Buffer, args.Offset, 100);
                     Console.WriteLine($"[From Client]: {recvData}");
-                    RegisterRecieve(args);
+                    RegisterReceive(args);
                 }
                 catch (Exception e)
                 {
