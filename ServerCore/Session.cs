@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace ServerCore
 {
-    abstract class Session
+    public abstract class Session
     {
         Socket _socket;
         int _disconnected = 0;
@@ -88,7 +88,7 @@ namespace ServerCore
                     {
                         _sendArgs.BufferList = null;
                         _pendingList.Clear();
-
+                        Console.WriteLine(_sendQueue.Count);
                         OnSend(args.BytesTransferred);
 
                         if (_sendQueue.Count > 0)
