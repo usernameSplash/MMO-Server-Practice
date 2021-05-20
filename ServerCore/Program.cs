@@ -6,28 +6,34 @@ using System.Threading;
 
 namespace ServerCore
 {
+    class GameSession : Session
+    {
+        public override void OnConnected(EndPoint endPoint)
+        {
+            Console.WriteLine($"OnConnected: {endPoint}");
+
+            string msg = "A";
+            Send(msg);
+            Thread.Sleep(1000);
+            Disconnect();
+        }
+        public override void OnDisconnected(EndPoint endPoint)
+        {
+            Console.WriteLine($"OnDisconnected: {endPoint}");
+        }
+        public override void OnReceive(ArraySegment<byte> buffer)
+        {
+            string recvData = Encoding.UTF8.GetString(buffer.Array, 0, buffer.Count);
+            Console.WriteLine($"[From Client]: {recvData}");
+        }
+        public override void OnSend(int numOfBytes)
+        {
+            Console.WriteLine($"Transferred Bytes: {numOfBytes}");
+        }
+    }
     class Program
     {
         static Listener _listener = new Listener();
-        static void _onAcceptHandler(Socket clientSocket)
-        {
-            try
-            {
-                Session session = new Session();
-                session.Init(clientSocket);
-
-                string msg = "Welcome to Kyeongmin's server!";
-                session.Send(msg);
-
-                Thread.Sleep(1000);
-
-                session.Disconnect();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-        }
 
         static void Main(string[] args)
         {
@@ -38,7 +44,7 @@ namespace ServerCore
             IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
 
             Console.WriteLine(host);
-            _listener.Init(endPoint, _onAcceptHandler);
+            _listener.Init(endPoint, () => { return new GameSession(); });
 
             while (true)
             {

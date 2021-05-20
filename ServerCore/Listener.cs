@@ -7,12 +7,12 @@ namespace ServerCore
     class Listener
     {
         Socket _listenerSocket;
-        Action<Socket> _onAcceptHandler;
+        Func<Session> _sessionFactory;
 
-        public void Init(EndPoint endPoint, Action<Socket> onAcceptHandler)
+        public void Init(EndPoint endPoint, Func<Session> sessionFactory)
         {
             _listenerSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _onAcceptHandler += onAcceptHandler;
+            _sessionFactory += sessionFactory;
 
             // Socket에 ip 주소 연동
             _listenerSocket.Bind(endPoint);
@@ -40,7 +40,9 @@ namespace ServerCore
         {
             if (args.SocketError == SocketError.Success)
             {
-                _onAcceptHandler.Invoke(args.AcceptSocket);
+                Session session = _sessionFactory.Invoke();
+                session.Init(args.AcceptSocket);
+                session.OnConnected(args.AcceptSocket.RemoteEndPoint);
             }
             else
             {
