@@ -12,9 +12,15 @@ namespace Server
         {
             Console.WriteLine($"OnConnected: {endPoint}");
 
-            string msg = "A";
-            Send(msg);
-            Thread.Sleep(1000);
+            ArraySegment<byte> openSegment = SendBufferHelper.Open(4096);
+            byte[] buffer = Encoding.UTF8.GetBytes("Buffer1");
+            byte[] buffer2 = Encoding.UTF8.GetBytes("Buffer2");
+            Array.Copy(buffer, 0, openSegment.Array, openSegment.Offset, buffer.Length);
+            Array.Copy(buffer2, 0, openSegment.Array, openSegment.Offset, buffer2.Length);
+            ArraySegment<byte> sendBuff = SendBufferHelper.Close(buffer.Length + buffer2.Length);
+
+            Send(sendBuff);
+            Thread.Sleep(2000);
             Disconnect();
         }
         public override void OnDisconnected(EndPoint endPoint)
@@ -43,10 +49,11 @@ namespace Server
             string host = Dns.GetHostName();
             IPHostEntry ipHost = Dns.GetHostEntry(host);
             IPAddress ipAddr = ipHost.AddressList[0];
+            Console.WriteLine(ipAddr);
             IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
 
-            Console.WriteLine(host);
             _listener.Init(endPoint, () => { return new GameSession(); });
+            Console.WriteLine(host);
 
             while (true)
             {

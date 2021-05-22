@@ -46,12 +46,20 @@ namespace DummyClient
             IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
 
             Connector connector = new Connector();
-            Thread.Sleep(200);
+            Thread.Sleep(1000);
             connector.Connect(endPoint, () => { return new GameSession(); });
 
             while (true)
             {
-                Thread.Sleep(200);
+                try
+                {
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.ToString());
+                }
+
+                Thread.Sleep(100);
             }
         }
     }
