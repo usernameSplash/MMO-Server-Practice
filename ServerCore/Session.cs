@@ -12,6 +12,8 @@ namespace ServerCore
         Socket _socket;
         int _disconnected = 0;
 
+        ReceiveBuffer _recvBuffer = new ReceiveBuffer(1024);
+
         object _lock = new Object();
         Queue<byte[]> _sendQueue = new Queue<byte[]>();
 
@@ -21,7 +23,7 @@ namespace ServerCore
 
         public abstract void OnConnected(EndPoint endPoint);
         public abstract void OnDisconnected(EndPoint endPoint);
-        public abstract void OnReceive(ArraySegment<byte> buffer);
+        public abstract int OnReceive(ArraySegment<byte> buffer);
         public abstract void OnSend(int numOfBytes);
 
         public void Init(Socket socket)
@@ -29,8 +31,6 @@ namespace ServerCore
             _socket = socket;
 
             _recvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnReceiveCompleted);
-            _recvArgs.SetBuffer(new byte[1024], 0, 1024);
-
             _sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnSendCompleted);
 
             RegisterReceive();
@@ -108,6 +108,10 @@ namespace ServerCore
 
         void RegisterReceive()
         {
+            _recvBuffer.Clear();
+            ArraySegment<byte> segment = _recvBuffer.WriteSegment;
+            _recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+
             bool pending = _socket.ReceiveAsync(_recvArgs);
             if (pending == false)
                 OnReceiveCompleted(null, _recvArgs);
@@ -119,7 +123,26 @@ namespace ServerCore
             {
                 try
                 {
-                    OnReceive(new ArraySegment<byte>(args.Buffer, 0, args.BytesTransferred));
+                    if (_recvBuffer.OnWrite(args.BytesTransferred) == false)
+                    {
+                        Disconnect();
+                        return;
+                    }
+
+                    int processLength = OnReceive(new ArraySegment<byte>(_recvBuffer.ReadSegment.Array));
+
+                    if (processLength < 0 || _recvBuffer.DataSize < processLength)
+                    {
+                        Disconnect();
+                        return;
+                    }
+
+                    if (_recvBuffer.OnRead(processLength) == false)
+                    {
+                        Disconnect();
+                        return;
+                    }
+
                     RegisterReceive();
                 }
                 catch (Exception e)
