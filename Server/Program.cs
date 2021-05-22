@@ -16,7 +16,7 @@ namespace Server
             byte[] buffer = Encoding.UTF8.GetBytes("Buffer1");
             byte[] buffer2 = Encoding.UTF8.GetBytes("Buffer2");
             Array.Copy(buffer, 0, openSegment.Array, openSegment.Offset, buffer.Length);
-            Array.Copy(buffer2, 0, openSegment.Array, openSegment.Offset, buffer2.Length);
+            Array.Copy(buffer2, 0, openSegment.Array, openSegment.Offset + buffer.Length, buffer2.Length);
             ArraySegment<byte> sendBuff = SendBufferHelper.Close(buffer.Length + buffer2.Length);
 
             Send(sendBuff);
@@ -52,7 +52,15 @@ namespace Server
             Console.WriteLine(ipAddr);
             IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
 
-            _listener.Init(endPoint, () => { return new GameSession(); });
+            try
+            {
+                _listener.Init(endPoint, () => { return new GameSession(); });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString());
+            }
+
             Console.WriteLine(host);
 
             while (true)

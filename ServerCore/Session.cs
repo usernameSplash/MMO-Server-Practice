@@ -14,7 +14,7 @@ namespace ServerCore
 
         ReceiveBuffer _recvBuffer = new ReceiveBuffer(1024);
 
-        object _lock = new Object();
+        object _lock = new object();
         Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
 
         List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
@@ -60,7 +60,6 @@ namespace ServerCore
 
         void RegisterSend()
         {
-            _pendingList.Clear();
             while (_sendQueue.Count > 0)
             {
                 ArraySegment<byte> buff = _sendQueue.Dequeue();
@@ -83,7 +82,7 @@ namespace ServerCore
                     {
                         _sendArgs.BufferList = null;
                         _pendingList.Clear();
-                        OnSend(args.BytesTransferred);
+                        OnSend(_sendArgs.BytesTransferred);
 
                         if (_sendQueue.Count > 0)
                             RegisterSend();
@@ -117,20 +116,22 @@ namespace ServerCore
             {
                 try
                 {
+                    // Write 커서 이동
                     if (_recvBuffer.OnWrite(args.BytesTransferred) == false)
                     {
                         Disconnect();
                         return;
                     }
 
-                    int processLength = OnReceive(new ArraySegment<byte>(_recvBuffer.ReadSegment.Array));
-
+                    // 컨텐츠 쪽으로 데이터를 넘겨주고 얼마나 처리했는지 받는다
+                    int processLength = OnReceive(_recvBuffer.ReadSegment);
                     if (processLength < 0 || _recvBuffer.DataSize < processLength)
                     {
                         Disconnect();
                         return;
                     }
 
+                    // Read 커서 이동
                     if (_recvBuffer.OnRead(processLength) == false)
                     {
                         Disconnect();
@@ -149,6 +150,7 @@ namespace ServerCore
                 Disconnect();
             }
         }
+
         #endregion
     }
 }
