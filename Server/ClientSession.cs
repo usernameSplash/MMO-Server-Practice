@@ -6,24 +6,59 @@ using ServerCore;
 
 namespace Server
 {
-    class Packet
+    public abstract class Packet
     {
         public ushort size;
         public ushort packetID;
+
+        public abstract ArraySegment<byte> Write();
+        public abstract void Read(ArraySegment<byte> s);
     }
 
     class PlayerInfoReq : Packet
     {
         public long playerID;
+
+        public PlayerInfoReq()
+        {
+            packetID = (ushort)PacketID.PlayerInfoReq;
+        }
+
+        public override ArraySegment<byte> Write()
+        {
+            ArraySegment<byte> s = SendBufferHelper.Open(4096);
+
+            ushort count = 0;
+            bool success = true;
+
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.packetID);
+            count += 2;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset + count, s.Count - count), this.playerID);
+            count += 8;
+            success &= BitConverter.TryWriteBytes(new Span<byte>(s.Array, s.Offset, s.Count), count);
+
+            if (success == false)
+                return null;
+
+            return SendBufferHelper.Close(count);
+        }
+
+        public override void Read(ArraySegment<byte> s)
+        {
+            ushort count = 0;
+
+            // ushort size = BitConverter.ToUInt16(s.Array, s.Offset + count);
+            count += 2;
+            // ushort id = BitConverter.ToUInt16(s.Array, s.Offset + count);
+            count += 2;
+
+            this.playerID = BitConverter.ToInt64(new ReadOnlySpan<byte>(s.Array, s.Offset + count, s.Count - count));
+            count += 8;
+        }
     }
 
-    class PlayerInfoOK : Packet
-    {
-        public int hp;
-        public int attack;
-    }
-
-    public enum PacketId
+    public enum PacketID
     {
         PlayerInfoReq = 1,
         PlayerInfoOK = 2,
@@ -68,13 +103,14 @@ namespace Server
             ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + count);
             count += 2;
 
-            switch ((PacketId)id)
+            switch ((PacketID)id)
             {
-                case PacketId.PlayerInfoReq:
+                case PacketID.PlayerInfoReq:
                     {
-                        long playerID = BitConverter.ToInt64(buffer.Array, buffer.Offset + count);
-                        count += 8;
-                        Console.WriteLine($"Player InfoReq: {playerID}");
+                        PlayerInfoReq p = new PlayerInfoReq();
+                        p.Read(buffer);
+
+                        Console.WriteLine($"PlayerInfoReq: {p.playerID}");
                     }
                     break;
             }
