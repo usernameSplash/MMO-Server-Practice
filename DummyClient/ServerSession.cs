@@ -37,13 +37,18 @@ namespace DummyClient
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.playerID);
             count += sizeof(long);
 
-            ushort nameLen = (ushort)Encoding.Unicode.GetByteCount(this.name);
+
+            // ushort nameLen = (ushort)Encoding.Unicode.GetByteCount(this.name);
+            // success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), nameLen);
+            // count += sizeof(ushort);
+            // Array.Copy(Encoding.Unicode.GetBytes(this.name), 0, segment.Array, count, nameLen);
+            // count += nameLen;
+
+            ushort nameLen = (ushort)Encoding.Unicode.GetBytes(this.name, 0, this.name.Length, segment.Array, segment.Offset + count + sizeof(ushort));
             success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), nameLen);
             count += sizeof(ushort);
-
-            Encoding.Unicode.GetByteCount(this.name);
-            Array.Copy(Encoding.Unicode.GetBytes(this.name), 0, segment.Array, count, nameLen);
             count += nameLen;
+
 
             success &= BitConverter.TryWriteBytes(s, count);
 
