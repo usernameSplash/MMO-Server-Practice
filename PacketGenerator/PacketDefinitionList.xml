@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PacketDefinitonList>
+    <packet name = "PlayerInfoReq">
+        <long name="playerID" />
+        <string name="name" />
+        <list name="skill">
+            <int name="id" />
+            <short name="level" />
+            <float name="duration" />
+        </list>
+    </packet>
+</PacketDefinitonList>
