@@ -12,12 +12,22 @@ namespace PacketGenerator
 
         static void Main(string[] args)
         {
+            string pdlPath = "";
+
+            if (args.Length >= 1)
+            {
+                Console.WriteLine(args[0]);
+                pdlPath = args[0];
+            }
+
             XmlReaderSettings settings = new XmlReaderSettings()
             {
                 IgnoreComments = true,
                 IgnoreWhitespace = true
             };
-            using (XmlReader reader = XmlReader.Create("PacketDefinitionList.xml", settings))
+
+
+            using (XmlReader reader = XmlReader.Create(pdlPath, settings))
             {
                 reader.MoveToContent();
 
