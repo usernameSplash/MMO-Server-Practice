@@ -8,12 +8,6 @@ using ServerCore;
 
 namespace Server
 {
-    public enum PacketID
-    {
-        PlayerInfoReq = 1,
-        PlayerInfoOK = 2,
-    }
-
     class ClientSession : PacketSession
     {
         public override void OnConnected(EndPoint endPoint)

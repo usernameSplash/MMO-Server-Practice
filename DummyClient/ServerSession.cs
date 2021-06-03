@@ -6,12 +6,6 @@ using ServerCore;
 
 namespace DummyClient
 {
-    public enum PacketID
-    {
-        PlayerInfoReq = 1,
-        PlayerInfoOK = 2,
-    }
-
     class ServerSession : PacketSession
     {
         public override void OnConnected(EndPoint endPoint)
