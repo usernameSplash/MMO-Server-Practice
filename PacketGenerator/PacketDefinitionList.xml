@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PacketDefinitonList>
-    <packet name = "PlayerInfoReq">
+    <packet name = "C_PlayerInfoReq">
         <long name="playerID" />
         <string name="name" />
         <list name="skill">
@@ -12,7 +12,7 @@
             </list>
         </list>
     </packet>
-    <packet name = "Test">
+    <packet name = "S_Test">
         <byte name="testByte" />
         <int name="testInt" />
     </packet>
