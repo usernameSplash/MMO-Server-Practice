@@ -36,6 +36,15 @@ namespace ServerCore
             RegisterReceive();
         }
 
+        void Clear()
+        {
+            lock (_lock)
+            {
+                _sendQueue.Clear();
+                _pendingList.Clear();
+            }
+        }
+
         public void Disconnect()
         {
             if (Interlocked.Exchange(ref _disconnected, 1) == 1)
@@ -66,10 +75,16 @@ namespace ServerCore
                 _pendingList.Add(buff);
             }
             _sendArgs.BufferList = _pendingList;
-
-            bool pending = _socket.SendAsync(_sendArgs);
-            if (pending == false)
-                OnSendCompleted(null, _sendArgs);
+            try
+            {
+                bool pending = _socket.SendAsync(_sendArgs);
+                if (pending == false)
+                    OnSendCompleted(null, _sendArgs);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"RegisterSend Fialed {e}");
+            }
         }
 
         void OnSendCompleted(object sender, SocketAsyncEventArgs args)
@@ -105,9 +120,16 @@ namespace ServerCore
             ArraySegment<byte> segment = _recvBuffer.WriteSegment;
             _recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
 
-            bool pending = _socket.ReceiveAsync(_recvArgs);
-            if (pending == false)
-                OnReceiveCompleted(null, _recvArgs);
+            try
+            {
+                bool pending = _socket.ReceiveAsync(_recvArgs);
+                if (pending == false)
+                    OnReceiveCompleted(null, _recvArgs);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"RegisterReceive Failed {e}");
+            }
         }
 
         void OnReceiveCompleted(object sender, SocketAsyncEventArgs args)

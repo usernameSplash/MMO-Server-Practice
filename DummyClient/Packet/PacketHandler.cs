@@ -5,7 +5,7 @@ using ServerCore;
 
 class PacketHandler
 {
-    public static void S_TestHandler(Session session, IPacket packet)
+    public static void S_ChatHandler(Session session, IPacket packet)
     {
 
     }
