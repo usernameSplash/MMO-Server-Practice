@@ -9,14 +9,12 @@ namespace Server
     class Program
     {
         static Listener _listener = new Listener();
+        public static GameRoom Room = new GameRoom();
 
         static void Main(string[] args)
         {
-            PacketManager.Instance.Register();
-
             // DNS (Domain Name System)
             string host = "localhost";
-
             IPHostEntry ipHost = Dns.GetHostEntry(host);
             IPAddress ipAddr = ipHost.AddressList[0];
             IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
@@ -24,7 +22,7 @@ namespace Server
             Console.WriteLine(ipAddr);
             try
             {
-                _listener.Init(endPoint, () => { return new ClientSession(); });
+                _listener.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
             }
             catch (Exception e)
             {
