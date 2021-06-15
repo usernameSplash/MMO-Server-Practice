@@ -1,12 +1,20 @@
 using System;
 using System.Collections.Generic;
+using ServerCore;
 
 namespace Server
 {
-    class GameRoom
+    class GameRoom : IJobQueue
     {
         List<ClientSession> _sessions = new List<ClientSession>();
         object _lock = new object();
+
+        JobQueue _jobQueue = new JobQueue();
+
+        public void Push(Action job)
+        {
+            _jobQueue.Push(job);
+        }
 
         public void Enter(ClientSession session)
         {
