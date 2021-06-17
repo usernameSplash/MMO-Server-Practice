@@ -10,6 +10,7 @@ namespace ServerCore
         public sealed override int OnReceive(ArraySegment<byte> buffer)
         {
             int processLength = 0;
+            int packetCount = 0;
 
             while (true)
             {
@@ -24,10 +25,14 @@ namespace ServerCore
 
                 // 패킷 조립
                 OnReceivePacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
+                packetCount++;
 
                 processLength += dataSize;
                 buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
             }
+
+            if (packetCount > 1)
+                Console.WriteLine($"PacketCount: {packetCount}");
 
             return processLength;
         }

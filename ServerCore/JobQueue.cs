@@ -32,8 +32,13 @@ namespace ServerCore
             while (true)
             {
                 Action action = Pop();
+
                 if (action == null)
+                {
+                    _flush = false;
                     return;
+                }
+
                 action.Invoke();
             }
         }
@@ -44,7 +49,7 @@ namespace ServerCore
             {
                 if (_jobQueue.Count == 0)
                 {
-                    _flush = false;
+                    // _flush = false;
                     return null;
                 }
                 return _jobQueue.Dequeue();

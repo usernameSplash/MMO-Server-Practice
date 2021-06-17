@@ -12,7 +12,7 @@ namespace ServerCore
         Socket _socket;
         int _disconnected = 0;
 
-        ReceiveBuffer _recvBuffer = new ReceiveBuffer(1024);
+        ReceiveBuffer _recvBuffer = new ReceiveBuffer(65535);
 
         object _lock = new object();
         Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
@@ -57,6 +57,21 @@ namespace ServerCore
 
 
         #region 네트워크 통신
+
+        public void Send(List<ArraySegment<byte>> sendBuffList)
+        {
+            if (sendBuffList.Count == 0)
+                return;
+
+            lock (_lock)
+            {
+                foreach (ArraySegment<Byte> sendBuff in sendBuffList)
+                    _sendQueue.Enqueue(sendBuff);
+
+                if (_pendingList.Count == 0)
+                    RegisterSend();
+            }
+        }
         public void Send(ArraySegment<byte> sendBuff)
         {
             lock (_lock)
@@ -83,7 +98,7 @@ namespace ServerCore
             }
             catch (Exception e)
             {
-                Console.WriteLine($"RegisterSend Fialed {e}");
+                Console.WriteLine($"RegisterSend Failed {e}");
             }
         }
 
