@@ -9,7 +9,7 @@ namespace ServerCore
         Socket _listenerSocket;
         Func<Session> _sessionFactory;
 
-        public void Init(EndPoint endPoint, Func<Session> sessionFactory)
+        public void Init(EndPoint endPoint, Func<Session> sessionFactory, int register = 10, int backlog = 100)
         {
             _listenerSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             _sessionFactory += sessionFactory;
@@ -19,11 +19,14 @@ namespace ServerCore
 
             // 통신 시작
             // backlog : 최대 대기 수
-            _listenerSocket.Listen(10);
+            _listenerSocket.Listen(backlog);
 
-            SocketAsyncEventArgs args = new SocketAsyncEventArgs();
-            args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);
-            RegisterAccept(args);
+            for (int i = 0; i < register; i++)
+            {
+                SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+                args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);
+                RegisterAccept(args);
+            }
         }
 
         void RegisterAccept(SocketAsyncEventArgs args)
