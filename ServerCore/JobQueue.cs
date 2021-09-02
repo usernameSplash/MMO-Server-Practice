@@ -1,59 +1,58 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace ServerCore
 {
-    public interface IJobQueue
-    {
-        void Push(Action job);
-    }
+	public interface IJobQueue
+	{
+		void Push(Action job);
+	}
 
-    public class JobQueue : IJobQueue
-    {
-        Queue<Action> _jobQueue = new Queue<Action>();
-        object _lock = new object();
-        bool _flush = false;
+	public class JobQueue : IJobQueue
+	{
+		Queue<Action> _jobQueue = new Queue<Action>();
+		object _lock = new object();
+		bool _flush = false;
 
-        public void Push(Action job)
-        {
-            bool flush = false;
-            lock (_lock)
-            {
-                _jobQueue.Enqueue(job);
-                if (_flush == false)
-                    flush = _flush = true;
-            }
-            if (flush)
-                Flush();
-        }
+		public void Push(Action job)
+		{
+			bool flush = false;
 
-        void Flush()
-        {
-            while (true)
-            {
-                Action action = Pop();
+			lock (_lock)
+			{
+				_jobQueue.Enqueue(job);
+				if (_flush == false)
+					flush = _flush = true;
+			}
 
-                if (action == null)
-                {
-                    _flush = false;
-                    return;
-                }
+			if (flush)
+				Flush();
+		}
 
-                action.Invoke();
-            }
-        }
+		void Flush()
+		{
+			while (true)
+			{
+				Action action = Pop();
+				if (action == null)
+					return;
 
-        Action Pop()
-        {
-            lock (_lock)
-            {
-                if (_jobQueue.Count == 0)
-                {
-                    // _flush = false;
-                    return null;
-                }
-                return _jobQueue.Dequeue();
-            }
-        }
-    }
+				action.Invoke();
+			}
+		}
+
+		Action Pop()
+		{
+			lock (_lock)
+			{
+				if (_jobQueue.Count == 0)
+				{
+					_flush = false;
+					return null;
+				}
+				return _jobQueue.Dequeue();
+			}
+		}
+	}
 }

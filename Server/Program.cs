@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using ServerCore;
 
 namespace Server
@@ -25,23 +28,16 @@ namespace Server
             IPAddress ipAddr = ipHost.AddressList[0];
             IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
 
-            Console.WriteLine(ipAddr);
-            try
-            {
-                _listener.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+            _listener.Init(endPoint, () => { return SessionManager.Instance.Generate(); });
+            Console.WriteLine("Listening...");
 
+            //FlushRoom();
             JobTimer.Instance.Push(FlushRoom);
 
             while (true)
             {
                 JobTimer.Instance.Flush();
             }
-
         }
     }
 }

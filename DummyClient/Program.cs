@@ -1,12 +1,14 @@
-﻿using System;
-using System.Text;
-using System.Threading;
+﻿using ServerCore;
+using System;
 using System.Net;
 using System.Net.Sockets;
-using ServerCore;
+using System.Text;
+using System.Threading;
 
 namespace DummyClient
 {
+
+
     class Program
     {
         static void Main(string[] args)
@@ -18,11 +20,10 @@ namespace DummyClient
             IPEndPoint endPoint = new IPEndPoint(ipAddr, 7777);
 
             Connector connector = new Connector();
-            Thread.Sleep(1000);
+
             connector.Connect(endPoint,
                 () => { return SessionManager.Instance.Generate(); },
-                500
-            );
+                10);
 
             while (true)
             {
